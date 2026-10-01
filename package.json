@@ -7,5 +7,14 @@
     "newman": "^6.2.1",
     "newman-reporter-htmlextra": "^1.23.1",
     "mysql2": "^3.11.0"
+  },
+  "scripts": {
+    "db:up": "docker compose up -d --build",
+    "db:reset": "docker compose down -v && docker compose up -d --build",
+    "test:local": "node scripts/run-newman.js local",
+    "test:staging": "node scripts/run-newman.js staging",
+    "test:data": "node scripts/run-newman.js local --data",
+    "db:verify": "node scripts/db-verify.js --env local",
+    "test:all": "npm run test:local && npm run test:staging"
   }
 }

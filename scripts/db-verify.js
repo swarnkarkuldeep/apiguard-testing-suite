@@ -21,14 +21,8 @@ const arg = (name, fallback) => {
 const envName = arg('env', 'local');
 const exportFile = arg('export', path.join('reports', `${envName}-env.json`));
 
-// ---------- tiny .env loader (so the script also works when run by hand) ----------
-const envPath = path.join(root, '.env');
-if (fs.existsSync(envPath)) {
-  for (const line of fs.readFileSync(envPath, 'utf8').split(/\r?\n/)) {
-    const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
-    if (m && process.env[m[1]] === undefined) process.env[m[1]] = m[2];
-  }
-}
+// Load .env so the script also works when run by hand (CI passes real environment variables).
+require('./load-env')();
 
 // ---------- Newman export -> plain { key: value } ----------
 const exported = JSON.parse(fs.readFileSync(path.resolve(root, exportFile), 'utf8'));

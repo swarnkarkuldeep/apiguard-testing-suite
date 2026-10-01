@@ -314,12 +314,14 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "// Test data generated on every run, so the collection can be re-run against the same database.",
+                  "// Test data for this run. With a data file (--data / iteration data) the CSV row is used;",
+                  "// otherwise values are generated, so the collection can be re-run against the same database.",
                   "// {{$randomProductName}} is a Postman dynamic variable; replaceIn() resolves it inside a script.",
+                  "const row = (key) => pm.iterationData.get(key);   // undefined when there is no data file",
                   "pm.environment.set('productSku', 'QA-' + Date.now());              // sku is UNIQUE in the database",
-                  "pm.environment.set('productName', 'QA ' + pm.variables.replaceIn('{{$randomProductName}}'));",
-                  "pm.environment.set('productPrice', Number((Math.random() * 90 + 10).toFixed(2)));",
-                  "pm.environment.set('productStock', 20 + Math.floor(Math.random() * 80));"
+                  "pm.environment.set('productName', row('name') || ('QA ' + pm.variables.replaceIn('{{$randomProductName}}')));",
+                  "pm.environment.set('productPrice', row('price') ? Number(row('price')) : Number((Math.random() * 90 + 10).toFixed(2)));",
+                  "pm.environment.set('productStock', row('stock') ? Number(row('stock')) : 20 + Math.floor(Math.random() * 80));"
                 ]
               }
             },
