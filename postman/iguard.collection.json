@@ -1,0 +1,47 @@
+{
+  "info": {
+    "_postman_id": "iguard-collection-0001",
+    "name": "IGuard API Tests",
+    "description": "Tests for the IGuard store API. Run with an environment (local or staging) selected. Folders run in order: Health, Auth, Products CRUD, Orders, Negative, Cleanup.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "contentType",   "value": "application/json" },
+    { "key": "maxResponseMs", "value": "1000" }
+  ],
+  "item": [
+    {
+      "name": "00 Health",
+      "item": [
+        {
+          "name": "Health check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// The API reports which environment it is running as; it must match the selected Postman environment.",
+                  "pm.test('status code is 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('status is ok', () => pm.expect(json.status).to.eql('ok'));",
+                  "pm.test('API env matches Postman environment', () => pm.expect(json.env).to.eql(pm.environment.get('envName')));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+          }
+        }
+      ]
+    },
+    { "name": "01 Auth",           "item": [] },
+    { "name": "02 Products CRUD",  "item": [] },
+    { "name": "03 Orders",         "item": [] },
+    { "name": "04 Negative",       "item": [] },
+    { "name": "99 Cleanup",        "item": [] }
+  ]
+}

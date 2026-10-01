@@ -27,6 +27,21 @@ Reset the databases to their seed data: `docker compose down -v && docker compos
 Seeded test accounts (dev only) are listed in `.env.example`. MySQL is exposed on
 host port 3307.
 
+## Postman collection and environments
+- Collection: `postman/iguard.collection.json`, folders `00 Health` to `99 Cleanup`.
+- Environments: `postman/environments/local.json` (API on :3000) and
+  `staging.json` (API on :3001). Import all three into Postman and pick an environment.
+- `jwtSecret` is a placeholder (`SET_ME_LOCALLY`) in git. Set the real value from
+  your `.env` (`JWT_SECRET_LOCAL` / `JWT_SECRET_STAGING`) in Postman, or pass it to
+  Newman with `--env-var "jwtSecret=..."`. It is only needed for the expired-token test (Phase 6).
+- The seeded test passwords are dev-only and listed in `.env.example`.
+
+Quick run (after `npm install`):
+```bash
+npx newman run postman/iguard.collection.json -e postman/environments/local.json
+npx newman run postman/iguard.collection.json -e postman/environments/staging.json
+```
+
 ## How to run
 Added in Phase 8 (`npm run test:local`, `npm run test:staging`).
 
