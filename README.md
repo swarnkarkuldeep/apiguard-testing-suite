@@ -52,6 +52,21 @@ npx newman run postman/iguard.collection.json -e postman/environments/staging.js
 - **Prove a check can fail** by overriding a value on the command line:
   `--env-var maxResponseMs=1` or `--env-var 'schema_product={"type":"object","required":["nope"]}'`.
 
+## Negative scenarios (`04 Negative`)
+31 requests, each asserting the exact 4xx status, the exact error `code` and the error
+schema: missing, garbage and expired tokens; wrong credentials; malformed JSON; missing
+or invalid fields; duplicate email and SKU; nonexistent IDs; SQL-injection-style input;
+wrong HTTP methods; non-admin access; insufficient stock; another user's order; deleting
+a product that is in an order. Some also check side effects (row count unchanged, users
+table intact, stock unchanged after a rolled-back order).
+
+The expired-token test signs its own JWT, so it needs the real secret:
+```bash
+npx newman run postman/iguard.collection.json -e postman/environments/local.json \
+  --env-var "jwtSecret=<JWT_SECRET_LOCAL from .env>"
+```
+(`npm run test:local` will do this for you in Phase 8.) Without it only that one test fails.
+
 ## How to run
 Added in Phase 8 (`npm run test:local`, `npm run test:staging`).
 
