@@ -1,0 +1,3 @@
+# Keep line endings as LF in the repo and in checkouts, so SQL init files and scripts
+# behave the same on Windows, macOS, Linux and in CI.
+* text=auto eol=lf
