@@ -58,6 +58,29 @@ curl localhost:3001/health    # {"status":"ok","env":"staging"}
 Seeded test accounts (dev only) are listed in `.env.example`. No real secret is committed:
 the JWT secrets live in `.env` (git-ignored) and in CI secrets.
 
+## Demo storefront
+The API also serves a small storefront (plain HTML, CSS and JavaScript in `app/public/`).
+Open **http://localhost:3000** (local) or **http://localhost:3001** (staging); the badge in the
+header shows which environment the page is talking to. You can browse products, register and
+log in, place an order, and see your orders. API errors are shown as the API sent them.
+It is a demo front end for the API, not part of the test suite's target. Seeded accounts are
+in `.env.example`.
+
+Logged out: products are visible, ordering is disabled.
+
+![Storefront, logged out](docs/screenshots/01-storefront-logged-out.png)
+
+Logged in, after placing an order (stock dropped from 100 to 98, order details expanded):
+
+![Storefront, logged in with an order](docs/screenshots/02-logged-in-order.png)
+
+Ordering more than the stock shows the API's real error:
+
+![Storefront, INSUFFICIENT_STOCK error](docs/screenshots/03-error-insufficient-stock.png)
+
+All API data is inserted into the page with `textContent` (never `innerHTML`), because
+product names are user input.
+
 ## How to run
 ```bash
 npm run test:local          # Newman against local, HTML report, then SQL checks
@@ -84,15 +107,20 @@ Open one in a browser. In CI they are uploaded as the `newman-reports` artifact 
 `reports/<env>-env.json` holds the variables Newman captured and feeds the SQL checks.
 Both are git-ignored.
 
-> **Screenshot placeholder:** save a screenshot of a report's summary page as
-> `docs/screenshots/report-summary.png` and replace this note with
-> `![Report summary](docs/screenshots/report-summary.png)`.
->
-> **Screenshot placeholder:** save a screenshot of the terminal output of `npm run test:local`
-> (Newman summary plus the 13 SQL `PASS` lines) as `docs/screenshots/terminal-run.png`.
+**Report summary** (local run: 237 assertions, 0 failed):
+
+![Newman HTML report summary](docs/screenshots/04-newman-report-summary.png)
+
+**One negative scenario in the report**: a SQL-injection login that passes email validation and
+reaches the query. The API answers 401 `INVALID_CREDENTIALS`, and all five assertions pass
+(status, error code, error schema, response time, `Content-Type`):
+
+![Newman report: SQL injection login scenario](docs/screenshots/05-newman-report-negative-test.png)
 
 ## Test case summary
-Each full run executes **47 requests and 237 assertions** per environment.
+Each full run executes **47 requests and 237 assertions** per environment. (The Newman report
+shows 51 "requests": it also counts the 4 helper calls that test scripts make with
+`pm.sendRequest` to check side effects.)
 
 | Folder | Requests | What it covers |
 |---|---|---|
@@ -145,7 +173,7 @@ for local and staging), and uploads the HTML reports. Optionally add repository 
 ## Project structure
 ```
 docs/        PRD, design document, implementation plan, resume evidence, interview prep
-app/         the system under test (Express API, Dockerfile)
+app/         the system under test (Express API, Dockerfile) and its demo storefront (app/public)
 db/          schema and seed data for both environments (loaded by Docker on first start)
 postman/     collection, local/staging environments, CSV data file
 sql/         13 verification queries + README explaining each

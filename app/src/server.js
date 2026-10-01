@@ -1,8 +1,12 @@
+const path = require('path');
 const express = require('express');
 const { fail } = require('./errors');
 
 const app = express();
 app.use(express.json());
+
+// Demo storefront (HTML/CSS/JS) served from the same origin as the API, so no CORS is needed.
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.get('/health', (req, res) => res.json({ status: 'ok', env: process.env.APP_ENV }));
 app.use('/auth', require('./routes/auth'));

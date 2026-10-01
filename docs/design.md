@@ -107,3 +107,14 @@ verification steps, a git commit, and a wait for "go ahead".
 - Node 20 LTS in the Docker image (your machine runs Node 24; either works for the API).
 - `mysql2` and `bcryptjs` (pure JS, no native build problems on Windows) and `jsonwebtoken`.
 - Response-time threshold of 1000 ms for local and staging.
+
+## 11. Addendum: demo frontend (added after Phase 10)
+A small storefront served by the Express app, so the API has a visible front end and the
+README can show screenshots. It is a demo, not part of the test target (UI testing stays a non-goal).
+
+- **Files:** `app/public/index.html`, `style.css`, `app.js`; served with `express.static`, copied into the image by the Dockerfile. Same origin as the API, so no CORS. Works on :3000 and :3001.
+- **Features:** environment badge (from `/health`); register and login (token in `sessionStorage`); product grid with quantity box and Order button (disabled when logged out or out of stock); "My orders" with details; a message banner showing the API's real error code and message.
+- **Safety:** all API data is inserted with `textContent`, never `innerHTML` (product names are user input).
+- **Style:** plain CSS, responsive, light and dark mode, no CDNs, fonts or frameworks.
+- **Test impact:** none: the suite never requests `/`. `npm run test:all` is re-run to confirm.
+- **Screenshots:** `docs/screenshots/` (storefront logged out, logged in with an order, error state, Newman HTML report views), referenced from the README.

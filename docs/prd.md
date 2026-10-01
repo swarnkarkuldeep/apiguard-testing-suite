@@ -19,7 +19,8 @@ It has two parts:
 ## 3. Non-goals
 - A production-grade backend (no pagination, rate limiting, email, etc.).
 - Performance or load testing (only a basic response-time assertion).
-- UI testing.
+- UI testing. (A small demo storefront was added later in `app/public/` so the API has a
+  visible front end; it is not a test target. See `design.md` section 11.)
 
 ## 4. Target audience
 - **Primary:** recruiters and interviewers reading the repo (QA / SDET roles).

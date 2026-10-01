@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IGuard Store</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-row">
+      <h1>IGuard Store</h1>
+      <span id="envBadge" class="badge" title="Which API environment this page is talking to">connecting...</span>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- Success / error messages. The API's own error code and message are shown here. -->
+    <div id="message" class="message" role="status" hidden></div>
+
+    <section class="panel" aria-labelledby="accountTitle">
+      <h2 id="accountTitle">Account</h2>
+
+      <!-- Shown when logged out -->
+      <form id="authForm" class="auth-form">
+        <label id="nameRow" hidden>Name
+          <input id="name" type="text" autocomplete="name">
+        </label>
+        <label>Email
+          <input id="email" type="email" autocomplete="email" required>
+        </label>
+        <label>Password
+          <input id="password" type="password" autocomplete="current-password" required>
+        </label>
+        <div class="auth-actions">
+          <button id="authSubmit" type="submit">Log in</button>
+          <button id="authToggle" type="button" class="link">Need an account? Register</button>
+        </div>
+      </form>
+
+      <!-- Shown when logged in -->
+      <div id="userBox" class="user-box" hidden>
+        <p>Logged in as <strong id="userEmail"></strong> <span id="userRole" class="badge"></span></p>
+        <button id="logout" type="button" class="secondary">Log out</button>
+      </div>
+    </section>
+
+    <section aria-labelledby="productsTitle">
+      <h2 id="productsTitle">Products</h2>
+      <div id="productGrid" class="grid" aria-live="polite"></div>
+    </section>
+
+    <section id="ordersSection" class="panel" aria-labelledby="ordersTitle" hidden>
+      <h2 id="ordersTitle">My orders</h2>
+      <ul id="ordersList" class="orders"></ul>
+    </section>
+  </main>
+
+  <footer class="wrap site-footer">
+    Demo front end for the IGuard API test project. The API is tested with Postman, Newman and SQL checks.
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
