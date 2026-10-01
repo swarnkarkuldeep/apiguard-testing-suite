@@ -42,6 +42,16 @@ npx newman run postman/iguard.collection.json -e postman/environments/local.json
 npx newman run postman/iguard.collection.json -e postman/environments/staging.json
 ```
 
+## Assertions and schemas
+- **Every request** is checked for status code, response time (`maxResponseMs`,
+  default 1000 ms) and `Content-Type: application/json` (the last two live in one
+  collection-level test script), plus a JSON schema check with `tv4`.
+- **Schemas** are collection variables named `schema_*` (product, order, user, login,
+  error, ...). They use `additionalProperties: false`, so an unexpected field such as
+  a leaked `password_hash` fails the test.
+- **Prove a check can fail** by overriding a value on the command line:
+  `--env-var maxResponseMs=1` or `--env-var 'schema_product={"type":"object","required":["nope"]}'`.
+
 ## How to run
 Added in Phase 8 (`npm run test:local`, `npm run test:staging`).
 
