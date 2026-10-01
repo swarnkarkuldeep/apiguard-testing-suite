@@ -144,7 +144,7 @@ for local and staging), and uploads the HTML reports. Optionally add repository 
 
 ## Project structure
 ```
-docs/        PRD, design document, implementation plan
+docs/        PRD, design document, implementation plan, resume evidence, interview prep
 app/         the system under test (Express API, Dockerfile)
 db/          schema and seed data for both environments (loaded by Docker on first start)
 postman/     collection, local/staging environments, CSV data file
