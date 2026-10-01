@@ -244,7 +244,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"QA Widget\",\n  \"sku\": \"{{productSku}}\",\n  \"price\": 19.99,\n  \"stock\": 50\n}",
+              "raw": "{\n  \"name\": \"{{productName}}\",\n  \"sku\": \"{{productSku}}\",\n  \"price\": {{productPrice}},\n  \"stock\": {{productStock}}\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -258,8 +258,12 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "// Unique SKU per run (sku is UNIQUE in the database).",
-                  "pm.environment.set('productSku', 'QA-' + Date.now());"
+                  "// Test data generated on every run, so the collection can be re-run against the same database.",
+                  "// {{$randomProductName}} is a Postman dynamic variable; replaceIn() resolves it inside a script.",
+                  "pm.environment.set('productSku', 'QA-' + Date.now());              // sku is UNIQUE in the database",
+                  "pm.environment.set('productName', 'QA ' + pm.variables.replaceIn('{{$randomProductName}}'));",
+                  "pm.environment.set('productPrice', Number((Math.random() * 90 + 10).toFixed(2)));",
+                  "pm.environment.set('productStock', 20 + Math.floor(Math.random() * 80));"
                 ]
               }
             },
@@ -271,10 +275,10 @@
                   "pm.test('status code is 201', () => pm.response.to.have.status(201));",
                   "const json = pm.response.json();",
                   "pm.test('product has the values we sent', () => {",
-                  "  pm.expect(json.name).to.eql('QA Widget');",
+                  "  pm.expect(json.name).to.eql(pm.environment.get('productName'));",
                   "  pm.expect(json.sku).to.eql(pm.environment.get('productSku'));",
-                  "  pm.expect(json.price).to.eql(19.99);",
-                  "  pm.expect(json.stock).to.eql(50);",
+                  "  pm.expect(json.price).to.eql(Number(pm.environment.get('productPrice')));",
+                  "  pm.expect(json.stock).to.eql(Number(pm.environment.get('productStock')));",
                   "});",
                   "// Chain: read, update and order requests use this id.",
                   "pm.environment.set('productId', json.id);"
@@ -309,8 +313,43 @@
                   "const json = pm.response.json();",
                   "pm.test('returns the product we created', () => {",
                   "  pm.expect(json.id).to.eql(Number(pm.environment.get('productId')));",
+                  "  pm.expect(json.name).to.eql(pm.environment.get('productName'));",
                   "  pm.expect(json.sku).to.eql(pm.environment.get('productSku'));",
                   "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status code is 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('returns an array that includes the product we created', () => {",
+                  "  pm.expect(json).to.be.an('array');",
+                  "  const ids = json.map((p) => p.id);",
+                  "  pm.expect(ids).to.include(Number(pm.environment.get('productId')));",
+                  "});",
+                  "pm.test('seed products are still present', () => pm.expect(json.length).to.be.at.least(5));"
                 ]
               }
             }
@@ -338,7 +377,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"QA Widget v2\",\n  \"sku\": \"{{productSku}}\",\n  \"price\": 24.5,\n  \"stock\": 75\n}",
+              "raw": "{\n  \"name\": \"{{updatedName}}\",\n  \"sku\": \"{{productSku}}\",\n  \"price\": {{updatedPrice}},\n  \"stock\": {{updatedStock}}\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -355,10 +394,23 @@
                   "pm.test('status code is 200', () => pm.response.to.have.status(200));",
                   "const json = pm.response.json();",
                   "pm.test('response shows the updated values', () => {",
-                  "  pm.expect(json.name).to.eql('QA Widget v2');",
-                  "  pm.expect(json.price).to.eql(24.5);",
-                  "  pm.expect(json.stock).to.eql(75);",
+                  "  pm.expect(json.id).to.eql(Number(pm.environment.get('productId')));",
+                  "  pm.expect(json.name).to.eql(pm.environment.get('updatedName'));",
+                  "  pm.expect(json.price).to.eql(Number(pm.environment.get('updatedPrice')));",
+                  "  pm.expect(json.stock).to.eql(Number(pm.environment.get('updatedStock')));",
                   "});"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Generate the \"after\" values; the order request later checks its total against updatedPrice.",
+                  "pm.environment.set('updatedName', pm.environment.get('productName') + ' v2');",
+                  "pm.environment.set('updatedPrice', Number((Math.random() * 90 + 10).toFixed(2)));",
+                  "pm.environment.set('updatedStock', 20 + Math.floor(Math.random() * 80));"
                 ]
               }
             }
@@ -526,12 +578,15 @@
                 "exec": [
                   "pm.test('status code is 201', () => pm.response.to.have.status(201));",
                   "const json = pm.response.json();",
-                  "// The product was updated to price 24.5 earlier in the run, so 2 x 24.5 = 49.",
+                  "// Product price was changed by the update request, so the order must use updatedPrice.",
+                  "const price = Number(pm.environment.get('updatedPrice'));",
+                  "const expectedTotal = Math.round(price * 2 * 100) / 100;",
                   "pm.test('total is computed from the current price', () => {",
-                  "  pm.expect(json.total).to.eql(49);",
-                  "  pm.expect(json.items[0].unitPrice).to.eql(24.5);",
+                  "  pm.expect(json.total).to.eql(expectedTotal);",
+                  "  pm.expect(json.items[0].unitPrice).to.eql(price);",
+                  "  pm.expect(json.items[0].qty).to.eql(2);",
                   "});",
-                  "// Chain: get-order request and SQL checks use this id.",
+                  "// Chain: get-order, list-orders and SQL checks use this id.",
                   "pm.environment.set('orderId', json.id);"
                 ]
               }
@@ -566,6 +621,70 @@
                   "  pm.expect(json.id).to.eql(Number(pm.environment.get('orderId')));",
                   "  pm.expect(json.userId).to.eql(Number(pm.environment.get('newUserId')));",
                   "  pm.expect(json.items[0].productId).to.eql(Number(pm.environment.get('productId')));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List orders (own only)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status code is 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('list contains our order', () => {",
+                  "  pm.expect(json).to.be.an('array');",
+                  "  pm.expect(json.map((o) => o.id)).to.include(Number(pm.environment.get('orderId')));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get product after order (stock decreased)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/{{productId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products",
+                "{{productId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status code is 200', () => pm.response.to.have.status(200));",
+                  "// Ordering qty 2 must reduce stock from updatedStock by exactly 2.",
+                  "pm.test('stock decreased by the ordered quantity', () => {",
+                  "  pm.expect(pm.response.json().stock).to.eql(Number(pm.environment.get('updatedStock')) - 2);",
                   "});"
                 ]
               }
