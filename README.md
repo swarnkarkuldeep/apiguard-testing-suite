@@ -77,10 +77,25 @@ node scripts/db-verify.js --env local --export reports/local-env.json
 ```
 
 ## How to run
-Added in Phase 8 (`npm run test:local`, `npm run test:staging`).
+```bash
+npm install                 # once: Newman, htmlextra reporter, mysql2
+npm run db:up               # start MySQL + both APIs (once)
+npm run test:local          # Newman against local, HTML report, then SQL checks
+npm run test:staging        # same against staging
+npm run test:all            # local then staging
+npm run test:data           # data-driven: one iteration per row of postman/data/products.csv
+npm run db:reset            # wipe the databases back to seed data
+```
+Each `test:*` command reads the JWT secret from `.env`, runs the collection, writes the
+report, and exits non-zero if any assertion or SQL check fails (so CI goes red).
+`test:data` runs only the Auth and Products CRUD folders (the CSV drives product name,
+price and stock) and skips the SQL step.
 
 ## Reports
-Added in Phase 8 (HTML reports in `reports/`).
+HTML reports (newman-reporter-htmlextra) are written to `reports/<env>-<timestamp>.html`;
+open one in a browser. `reports/<env>-env.json` holds the variables Newman captured and
+feeds the SQL checks. Both are git-ignored. Screenshot placeholder:
+`docs/screenshots/report-summary.png` (added in Phase 9).
 
 ## Test case summary
 Added in Phase 9.
