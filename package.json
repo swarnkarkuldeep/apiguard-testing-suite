@@ -5,6 +5,7 @@
   "description": "API & data validation suite: Postman + Newman + SQL checks against MySQL",
   "devDependencies": {
     "newman": "^6.2.1",
-    "newman-reporter-htmlextra": "^1.23.1"
+    "newman-reporter-htmlextra": "^1.23.1",
+    "mysql2": "^3.11.0"
   }
 }

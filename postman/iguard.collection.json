@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "iguard-collection-0001",
     "name": "IGuard API Tests",
-    "description": "Tests for the IGuard store API. Run with an environment (local or staging) selected. Folders run in order: Health, Auth, Products CRUD, Orders, Negative, Cleanup.",
+    "description": "Tests for the IGuard store API. Run with an environment (local or staging) selected. Folders run in order: Health, Auth, Products CRUD, Orders, Negative, Final Snapshot.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -678,7 +678,11 @@
                   "pm.test('response matches schema_order', () => {",
                   "  const schema = JSON.parse(pm.variables.get('schema_order'));",
                   "  pm.expect(tv4.validate(pm.response.json(), schema), JSON.stringify(tv4.error)).to.be.true;",
-                  "});"
+                  "});",
+                  "// Saved for the SQL checks (scripts/db-verify.js compares the database with these API values).",
+                  "pm.environment.set('orderTotalApi', json.total);",
+                  "pm.environment.set('orderQtyApi', json.items[0].qty);",
+                  "pm.environment.set('orderUnitPriceApi', json.items[0].unitPrice);"
                 ]
               }
             }
@@ -2204,8 +2208,41 @@
       ]
     },
     {
-      "name": "99 Cleanup",
-      "item": []
+      "name": "99 Final Snapshot",
+      "item": [
+        {
+          "name": "Snapshot: product count",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('response matches schema_productList', () => {",
+                  "  pm.expect(tv4.validate(pm.response.json(), JSON.parse(pm.variables.get('schema_productList'))), JSON.stringify(tv4.error)).to.be.true;",
+                  "});",
+                  "// Saved for the SQL check 10_product_count.sql: how many products the API lists at the very end.",
+                  "pm.environment.set('productCountApi', pm.response.json().length);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
     }
   ],
   "event": [

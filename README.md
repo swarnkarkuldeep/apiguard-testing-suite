@@ -28,7 +28,7 @@ Seeded test accounts (dev only) are listed in `.env.example`. MySQL is exposed o
 host port 3307.
 
 ## Postman collection and environments
-- Collection: `postman/iguard.collection.json`, folders `00 Health` to `99 Cleanup`.
+- Collection: `postman/iguard.collection.json`, folders `00 Health` to `99 Final Snapshot`.
 - Environments: `postman/environments/local.json` (API on :3000) and
   `staging.json` (API on :3001). Import all three into Postman and pick an environment.
 - `jwtSecret` is a placeholder (`SET_ME_LOCALLY`) in git. Set the real value from
@@ -66,6 +66,15 @@ npx newman run postman/iguard.collection.json -e postman/environments/local.json
   --env-var "jwtSecret=<JWT_SECRET_LOCAL from .env>"
 ```
 (`npm run test:local` will do this for you in Phase 8.) Without it only that one test fails.
+
+## SQL validation
+13 queries in `sql/` verify API-created, updated and deleted data against MySQL (row
+exists, fields match, deleted rows are gone, no duplicates, counts and totals match).
+Newman exports the IDs and API values it captured; `scripts/db-verify.js` runs each
+query with them and prints PASS/FAIL. See `sql/README.md` for what each query proves.
+```bash
+node scripts/db-verify.js --env local --export reports/local-env.json
+```
 
 ## How to run
 Added in Phase 8 (`npm run test:local`, `npm run test:staging`).
