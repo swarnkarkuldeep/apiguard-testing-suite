@@ -1,0 +1,45 @@
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?copy .env.example to .env}
+    ports:
+      - "3307:3306"            # 3307 on the host so it never clashes with a local MySQL
+    volumes:
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+      - ./db:/db:ro
+      - mysql-data:/var/lib/mysql
+    healthcheck:               # API containers wait for this before starting
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api-local:
+    build: ./app
+    depends_on:
+      mysql: { condition: service_healthy }
+    environment:
+      APP_ENV: local
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      DB_NAME: iguard_local
+      JWT_SECRET: ${JWT_SECRET_LOCAL:?set in .env}
+    ports: ["3000:3000"]
+
+  api-staging:
+    build: ./app
+    depends_on:
+      mysql: { condition: service_healthy }
+    environment:
+      APP_ENV: staging
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      DB_NAME: iguard_staging
+      JWT_SECRET: ${JWT_SECRET_STAGING:?set in .env}
+    ports: ["3001:3000"]
+
+volumes:
+  mysql-data:
